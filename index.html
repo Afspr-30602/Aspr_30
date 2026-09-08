@@ -21,7 +21,7 @@
 
     .container {
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       margin: 0 auto;
       padding: 16px;
     }
@@ -81,7 +81,6 @@
     }
 
     .button-success {
-      margin-top: 8px;
       background: #16a34a;
     }
 
@@ -106,16 +105,29 @@
       font-weight: 700;
     }
 
+    .fixed-value,
     .field input,
     .field textarea {
       width: 100%;
+      min-height: 46px;
       padding: 12px;
       border: 1px solid #d1d5db;
       border-radius: 10px;
-      outline: none;
       background: #ffffff;
       color: #111827;
       font-size: 16px;
+      outline: none;
+    }
+
+    .fixed-value {
+      display: flex;
+      align-items: center;
+      background: #f3f4f6;
+      word-break: break-word;
+    }
+
+    .fixed-value.empty {
+      color: #9ca3af;
     }
 
     .field input:focus,
@@ -128,16 +140,20 @@
       resize: vertical;
     }
 
-    .fixed-value {
-      width: 100%;
-      min-height: 46px;
-      padding: 12px;
-      border: 1px solid #d1d5db;
+    .readonly {
+      background: #f3f4f6 !important;
+      color: #374151 !important;
+    }
+
+    .status {
+      margin-bottom: 16px;
+      padding: 10px 12px;
       border-radius: 10px;
       background: #f3f4f6;
-      color: #111827;
-      font-size: 16px;
-      word-break: break-word;
+      color: #6b7280;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
     }
 
     .message {
@@ -162,10 +178,6 @@
       color: #991b1b;
     }
 
-    .hidden {
-      display: none;
-    }
-
     .required {
       color: #dc2626;
     }
@@ -176,7 +188,7 @@
   <main class="container">
     <header class="header">
       <h1>📦 XUẤT CUỘN GIẤY</h1>
-      <p>Quét mã QR để nhập thông tin cuộn</p>
+      <p>Quản lý thông tin xuất cuộn</p>
     </header>
 
     <div id="message" class="message"></div>
@@ -194,27 +206,32 @@
       </button>
     </section>
 
-    <section id="qrInfo" class="card hidden">
-      <div class="card-title">Thông tin từ QR</div>
+    <section class="card">
+      <div class="card-title">📋 Thông tin xuất cuộn</div>
+
+      <div class="field">
+        <label>Thời gian xuất</label>
+        <input
+          id="thoiGian"
+          class="readonly"
+          type="text"
+          readonly>
+      </div>
 
       <div class="field">
         <label>Mã cuộn</label>
-        <div id="maCuon" class="fixed-value"></div>
+        <div id="maCuon" class="fixed-value empty">Chưa quét QR</div>
       </div>
 
       <div class="field">
         <label>Nhà cung cấp</label>
-        <div id="nhaCungCap" class="fixed-value"></div>
+        <div id="nhaCungCap" class="fixed-value empty">Chưa quét QR</div>
       </div>
 
       <div class="field">
         <label>Định lượng</label>
-        <div id="dinhLuong" class="fixed-value"></div>
+        <div id="dinhLuong" class="fixed-value empty">Chưa quét QR</div>
       </div>
-    </section>
-
-    <section id="inputInfo" class="card hidden">
-      <div class="card-title">Thông tin xuất</div>
 
       <div class="field">
         <label for="viTri">
@@ -235,7 +252,6 @@
           id="khoiLuong"
           type="number"
           inputmode="decimal"
-          min="0"
           step="0.01"
           autocomplete="off"
           placeholder="Nhập khối lượng">
@@ -247,6 +263,10 @@
           id="ghiChu"
           autocomplete="off"
           placeholder="Nhập ghi chú nếu có"></textarea>
+      </div>
+
+      <div id="status" class="status">
+        Sẵn sàng
       </div>
 
       <button
@@ -265,6 +285,7 @@
       scanner: null,
       scanning: false,
       submitting: false,
+      requestId: "",
       maCuon: "",
       nhaCungCap: "",
       dinhLuong: ""
@@ -274,16 +295,32 @@
       message: document.getElementById("message"),
       reader: document.getElementById("reader"),
       scanButton: document.getElementById("scanButton"),
-      qrInfo: document.getElementById("qrInfo"),
-      inputInfo: document.getElementById("inputInfo"),
+      thoiGian: document.getElementById("thoiGian"),
       maCuon: document.getElementById("maCuon"),
       nhaCungCap: document.getElementById("nhaCungCap"),
       dinhLuong: document.getElementById("dinhLuong"),
       viTri: document.getElementById("viTri"),
       khoiLuong: document.getElementById("khoiLuong"),
       ghiChu: document.getElementById("ghiChu"),
+      status: document.getElementById("status"),
       submitButton: document.getElementById("submitButton")
     };
+
+    function updateTime() {
+      const now = new Date();
+
+      elements.thoiGian.value =
+        now.toLocaleString("vi-VN", {
+          timeZone: "Asia/Ho_Chi_Minh",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        });
+    }
 
     function showMessage(message, type) {
       elements.message.textContent = message;
@@ -295,9 +332,21 @@
       elements.message.className = "message";
     }
 
+    function setStatus(message) {
+      elements.status.textContent = message;
+    }
+
     function setScanButton(text, disabled) {
       elements.scanButton.textContent = text;
       elements.scanButton.disabled = disabled;
+    }
+
+    function createRequestId() {
+      return (
+        Date.now().toString(36) +
+        "-" +
+        Math.random().toString(36).substring(2, 12)
+      );
     }
 
     async function startScanner() {
@@ -333,10 +382,16 @@
 
         state.scanning = true;
         setScanButton("📷 ĐANG QUÉT...", true);
+        setStatus("Đang chờ mã QR...");
       } catch (error) {
         console.error(error);
+
         state.scanning = false;
+
         setScanButton("📷 BẮT ĐẦU QUÉT", false);
+
+        setStatus("Không thể mở camera");
+
         showMessage(
           "Không thể mở camera. Vui lòng cấp quyền camera cho trình duyệt.",
           "message-error"
@@ -368,20 +423,26 @@
         .map(value => value.trim());
 
       if (parts.length !== 3) {
+        setStatus("QR không hợp lệ");
+
         showMessage(
-          "Mã QR không đúng định dạng.",
+          "QR không đúng định dạng. Cần: Mã cuộn | Nhà cung cấp | Định lượng.",
           "message-error"
         );
+
         return;
       }
 
       const [maCuon, nhaCungCap, dinhLuong] = parts;
 
       if (!maCuon || !nhaCungCap || !dinhLuong) {
+        setStatus("QR thiếu thông tin");
+
         showMessage(
-          "Mã QR đang thiếu thông tin.",
+          "QR đang thiếu thông tin.",
           "message-error"
         );
+
         return;
       }
 
@@ -393,14 +454,19 @@
       elements.nhaCungCap.textContent = nhaCungCap;
       elements.dinhLuong.textContent = dinhLuong;
 
-      elements.qrInfo.classList.remove("hidden");
-      elements.inputInfo.classList.remove("hidden");
+      elements.maCuon.classList.remove("empty");
+      elements.nhaCungCap.classList.remove("empty");
+      elements.dinhLuong.classList.remove("empty");
+
+      updateTime();
+
+      setStatus("Đã quét QR. Vui lòng nhập thông tin xuất.");
 
       elements.viTri.focus();
 
-      elements.inputInfo.scrollIntoView({
+      elements.viTri.scrollIntoView({
         behavior: "smooth",
-        block: "start"
+        block: "center"
       });
     }
 
@@ -410,6 +476,7 @@
           "Vui lòng quét mã QR trước khi xác nhận.",
           "message-error"
         );
+
         return false;
       }
 
@@ -418,7 +485,9 @@
           "Vui lòng nhập vị trí cuộn.",
           "message-error"
         );
+
         elements.viTri.focus();
+
         return false;
       }
 
@@ -427,22 +496,78 @@
           "Vui lòng nhập khối lượng cuộn.",
           "message-error"
         );
-        elements.khoiLuong.focus();
-        return false;
-      }
 
-      const khoiLuong = Number(elements.khoiLuong.value);
-
-      if (!Number.isFinite(khoiLuong) || khoiLuong < 0) {
-        showMessage(
-          "Khối lượng cuộn không hợp lệ.",
-          "message-error"
-        );
         elements.khoiLuong.focus();
+
         return false;
       }
 
       return true;
+    }
+
+    function checkServerStatus(requestId) {
+      return new Promise(resolve => {
+        const callbackName =
+          "qrCallback_" +
+          Date.now() +
+          "_" +
+          Math.random().toString(36).substring(2, 8);
+
+        const script = document.createElement("script");
+
+        const timeout = setTimeout(() => {
+          cleanup();
+          resolve(null);
+        }, 5000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+
+          if (window[callbackName]) {
+            delete window[callbackName];
+          }
+
+          if (script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
+        }
+
+        window[callbackName] = result => {
+          cleanup();
+          resolve(result);
+        };
+
+        script.src =
+          API_URL +
+          "?requestId=" +
+          encodeURIComponent(requestId) +
+          "&callback=" +
+          encodeURIComponent(callbackName);
+
+        script.onerror = () => {
+          cleanup();
+          resolve(null);
+        };
+
+        document.body.appendChild(script);
+      });
+    }
+
+    async function waitForServerConfirmation(requestId) {
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const result =
+          await checkServerStatus(requestId);
+
+        if (result && result.success) {
+          return true;
+        }
+
+        await new Promise(resolve => {
+          setTimeout(resolve, 1000);
+        });
+      }
+
+      return false;
     }
 
     async function submitData() {
@@ -451,10 +576,15 @@
       }
 
       state.submitting = true;
+      state.requestId = createRequestId();
+
       elements.submitButton.disabled = true;
       elements.submitButton.textContent = "ĐANG LƯU...";
 
+      setStatus("Đang gửi dữ liệu...");
+
       const payload = {
+        requestId: state.requestId,
         maCuon: state.maCuon,
         nhaCungCap: state.nhaCungCap,
         dinhLuong: state.dinhLuong,
@@ -473,50 +603,77 @@
           body: JSON.stringify(payload)
         });
 
+        const confirmed =
+          await waitForServerConfirmation(
+            state.requestId
+          );
+
+        if (!confirmed) {
+          throw new Error(
+            "Máy chủ chưa xác nhận giao dịch."
+          );
+        }
+
         showMessage(
-          "Đã gửi dữ liệu xuất cuộn.",
+          "Đã xuất cuộn thành công.",
           "message-success"
         );
 
+        setStatus("Hoàn tất. Sẵn sàng quét cuộn tiếp theo.");
+
         resetForm();
+
       } catch (error) {
         console.error(error);
 
+        setStatus("Gửi dữ liệu thất bại");
+
         showMessage(
-          "Không thể gửi dữ liệu. Vui lòng kiểm tra kết nối.",
+          "Không nhận được xác nhận từ máy chủ. Vui lòng kiểm tra Google Sheet trước khi gửi lại.",
           "message-error"
         );
       } finally {
         state.submitting = false;
         elements.submitButton.disabled = false;
-        elements.submitButton.textContent = "XÁC NHẬN XUẤT";
+        elements.submitButton.textContent =
+          "XÁC NHẬN XUẤT";
       }
     }
 
     function resetForm() {
+      state.requestId = "";
       state.maCuon = "";
       state.nhaCungCap = "";
       state.dinhLuong = "";
 
-      elements.maCuon.textContent = "";
-      elements.nhaCungCap.textContent = "";
-      elements.dinhLuong.textContent = "";
+      elements.maCuon.textContent = "Chưa quét QR";
+      elements.nhaCungCap.textContent = "Chưa quét QR";
+      elements.dinhLuong.textContent = "Chưa quét QR";
+
+      elements.maCuon.classList.add("empty");
+      elements.nhaCungCap.classList.add("empty");
+      elements.dinhLuong.classList.add("empty");
 
       elements.viTri.value = "";
       elements.khoiLuong.value = "";
       elements.ghiChu.value = "";
 
-      elements.qrInfo.classList.add("hidden");
-      elements.inputInfo.classList.add("hidden");
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
+      updateTime();
     }
 
-    elements.scanButton.addEventListener("click", startScanner);
-    elements.submitButton.addEventListener("click", submitData);
+    updateTime();
+
+    setInterval(updateTime, 1000);
+
+    elements.scanButton.addEventListener(
+      "click",
+      startScanner
+    );
+
+    elements.submitButton.addEventListener(
+      "click",
+      submitData
+    );
   </script>
 </body>
 </html>
