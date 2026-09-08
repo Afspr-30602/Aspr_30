@@ -1,1 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f766e">
+  <title>Xuất Cuộn Giấy</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f3f4f6;
+      color: #111827;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .header {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .card {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-title {
+      margin-bottom: 14px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 12px;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .button-primary {
+      background: #2563eb;
+    }
+
+    .button-success {
+      margin-top: 8px;
+      background: #16a34a;
+    }
+
+    .button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      outline: none;
+      background: #ffffff;
+      color: #111827;
+      font-size: 16px;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: #2563eb;
+    }
+
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .fixed-value {
+      width: 100%;
+      min-height: 46px;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      background: #f3f4f6;
+      color: #111827;
+      font-size: 16px;
+      word-break: break-word;
+    }
+
+    .message {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .message-success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .message-error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .required {
+      color: #dc2626;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header class="header">
+      <h1>📦 XUẤT CUỘN GIẤY</h1>
+      <p>Quét mã QR để nhập thông tin cuộn</p>
+    </header>
+
+    <div id="message" class="message"></div>
+
+    <section class="card">
+      <div class="card-title">📷 Quét mã QR</div>
+
+      <div id="reader"></div>
+
+      <button
+        id="scanButton"
+        class="button button-primary"
+        type="button">
+        📷 BẮT ĐẦU QUÉT
+      </button>
+    </section>
+
+    <section id="qrInfo" class="card hidden">
+      <div class="card-title">Thông tin từ QR</div>
+
+      <div class="field">
+        <label>Mã cuộn</label>
+        <div id="maCuon" class="fixed-value"></div>
+      </div>
+
+      <div class="field">
+        <label>Nhà cung cấp</label>
+        <div id="nhaCungCap" class="fixed-value"></div>
+      </div>
+
+      <div class="field">
+        <label>Định lượng</label>
+        <div id="dinhLuong" class="fixed-value"></div>
+      </div>
+    </section>
+
+    <section id="inputInfo" class="card hidden">
+      <div class="card-title">Thông tin xuất</div>
+
+      <div class="field">
+        <label for="viTri">
+          Vị trí cuộn (sau chạy) <span class="required">*</span>
+        </label>
+        <input
+          id="viTri"
+          type="text"
+          autocomplete="off"
+          placeholder="Nhập vị trí cuộn">
+      </div>
+
+      <div class="field">
+        <label for="khoiLuong">
+          Khối lượng cuộn (sau chạy) <span class="required">*</span>
+        </label>
+        <input
+          id="khoiLuong"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          autocomplete="off"
+          placeholder="Nhập khối lượng">
+      </div>
+
+      <div class="field">
+        <label for="ghiChu">Ghi chú</label>
+        <textarea
+          id="ghiChu"
+          autocomplete="off"
+          placeholder="Nhập ghi chú nếu có"></textarea>
+      </div>
+
+      <button
+        id="submitButton"
+        class="button button-success"
+        type="button">
+        XÁC NHẬN XUẤT
+      </button>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzZJdnph_VR-Msg50Sj1BiNzgb3UjwQPUKW8F3sPjEcMboiFDOxfMLXdHc-LvTK5rIt4w/exec";
+
+    const state = {
+      scanner: null,
+      scanning: false,
+      submitting: false,
+      maCuon: "",
+      nhaCungCap: "",
+      dinhLuong: ""
+    };
+
+    const elements = {
+      message: document.getElementById("message"),
+      reader: document.getElementById("reader"),
+      scanButton: document.getElementById("scanButton"),
+      qrInfo: document.getElementById("qrInfo"),
+      inputInfo: document.getElementById("inputInfo"),
+      maCuon: document.getElementById("maCuon"),
+      nhaCungCap: document.getElementById("nhaCungCap"),
+      dinhLuong: document.getElementById("dinhLuong"),
+      viTri: document.getElementById("viTri"),
+      khoiLuong: document.getElementById("khoiLuong"),
+      ghiChu: document.getElementById("ghiChu"),
+      submitButton: document.getElementById("submitButton")
+    };
+
+    function showMessage(message, type) {
+      elements.message.textContent = message;
+      elements.message.className = "message " + type;
+    }
+
+    function clearMessage() {
+      elements.message.textContent = "";
+      elements.message.className = "message";
+    }
+
+    function setScanButton(text, disabled) {
+      elements.scanButton.textContent = text;
+      elements.scanButton.disabled = disabled;
+    }
+
+    async function startScanner() {
+      if (state.scanning || state.submitting) {
+        return;
+      }
+
+      clearMessage();
+
+      if (state.scanner) {
+        try {
+          await state.scanner.clear();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      state.scanner = new Html5Qrcode("reader");
+
+      try {
+        await state.scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: {
+              width: 250,
+              height: 250
+            }
+          },
+          handleScanSuccess,
+          handleScanFailure
+        );
+
+        state.scanning = true;
+        setScanButton("📷 ĐANG QUÉT...", true);
+      } catch (error) {
+        console.error(error);
+        state.scanning = false;
+        setScanButton("📷 BẮT ĐẦU QUÉT", false);
+        showMessage(
+          "Không thể mở camera. Vui lòng cấp quyền camera cho trình duyệt.",
+          "message-error"
+        );
+      }
+    }
+
+    function handleScanFailure() {
+      return;
+    }
+
+    async function handleScanSuccess(decodedText) {
+      if (!state.scanning) {
+        return;
+      }
+
+      state.scanning = false;
+
+      try {
+        await state.scanner.stop();
+      } catch (error) {
+        console.error(error);
+      }
+
+      setScanButton("📷 QUÉT MÃ KHÁC", false);
+
+      const parts = decodedText
+        .split("|")
+        .map(value => value.trim());
+
+      if (parts.length !== 3) {
+        showMessage(
+          "Mã QR không đúng định dạng.",
+          "message-error"
+        );
+        return;
+      }
+
+      const [maCuon, nhaCungCap, dinhLuong] = parts;
+
+      if (!maCuon || !nhaCungCap || !dinhLuong) {
+        showMessage(
+          "Mã QR đang thiếu thông tin.",
+          "message-error"
+        );
+        return;
+      }
+
+      state.maCuon = maCuon;
+      state.nhaCungCap = nhaCungCap;
+      state.dinhLuong = dinhLuong;
+
+      elements.maCuon.textContent = maCuon;
+      elements.nhaCungCap.textContent = nhaCungCap;
+      elements.dinhLuong.textContent = dinhLuong;
+
+      elements.qrInfo.classList.remove("hidden");
+      elements.inputInfo.classList.remove("hidden");
+
+      elements.viTri.focus();
+
+      elements.inputInfo.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    function validateForm() {
+      if (!state.maCuon || !state.nhaCungCap || !state.dinhLuong) {
+        showMessage(
+          "Vui lòng quét mã QR trước khi xác nhận.",
+          "message-error"
+        );
+        return false;
+      }
+
+      if (!elements.viTri.value.trim()) {
+        showMessage(
+          "Vui lòng nhập vị trí cuộn.",
+          "message-error"
+        );
+        elements.viTri.focus();
+        return false;
+      }
+
+      if (!elements.khoiLuong.value.trim()) {
+        showMessage(
+          "Vui lòng nhập khối lượng cuộn.",
+          "message-error"
+        );
+        elements.khoiLuong.focus();
+        return false;
+      }
+
+      const khoiLuong = Number(elements.khoiLuong.value);
+
+      if (!Number.isFinite(khoiLuong) || khoiLuong < 0) {
+        showMessage(
+          "Khối lượng cuộn không hợp lệ.",
+          "message-error"
+        );
+        elements.khoiLuong.focus();
+        return false;
+      }
+
+      return true;
+    }
+
+    async function submitData() {
+      if (state.submitting || !validateForm()) {
+        return;
+      }
+
+      state.submitting = true;
+      elements.submitButton.disabled = true;
+      elements.submitButton.textContent = "ĐANG LƯU...";
+
+      const payload = {
+        maCuon: state.maCuon,
+        nhaCungCap: state.nhaCungCap,
+        dinhLuong: state.dinhLuong,
+        viTri: elements.viTri.value.trim(),
+        khoiLuong: elements.khoiLuong.value.trim(),
+        ghiChu: elements.ghiChu.value.trim()
+      };
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        showMessage(
+          "Đã gửi dữ liệu xuất cuộn.",
+          "message-success"
+        );
+
+        resetForm();
+      } catch (error) {
+        console.error(error);
+
+        showMessage(
+          "Không thể gửi dữ liệu. Vui lòng kiểm tra kết nối.",
+          "message-error"
+        );
+      } finally {
+        state.submitting = false;
+        elements.submitButton.disabled = false;
+        elements.submitButton.textContent = "XÁC NHẬN XUẤT";
+      }
+    }
+
+    function resetForm() {
+      state.maCuon = "";
+      state.nhaCungCap = "";
+      state.dinhLuong = "";
+
+      elements.maCuon.textContent = "";
+      elements.nhaCungCap.textContent = "";
+      elements.dinhLuong.textContent = "";
+
+      elements.viTri.value = "";
+      elements.khoiLuong.value = "";
+      elements.ghiChu.value = "";
+
+      elements.qrInfo.classList.add("hidden");
+      elements.inputInfo.classList.add("hidden");
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+    elements.scanButton.addEventListener("click", startScanner);
+    elements.submitButton.addEventListener("click", submitData);
+  </script>
+</body>
+</html>
