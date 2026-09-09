@@ -320,6 +320,7 @@ async function startScanner() {
             Math.floor(viewfinderWidth * 0.75),
             Math.floor(viewfinderHeight * 0.75)
           );
+
           return {
             width: size,
             height: size
@@ -336,21 +337,14 @@ async function startScanner() {
     startBtn.classList.add("hidden");
     rescanBtn.classList.add("hidden");
 
-    try {
-      const capabilities =
-        html5QrCode.getRunningTrackCameraCapabilities();
-
-      if (capabilities &&
-          capabilities.torchFeature &&
-          capabilities.torchFeature.isSupported()) {
-        torchBtn.classList.remove("hidden");
-      }
-    } catch (error) {
-    }
+    torchBtn.classList.remove("hidden");
+    torchBtn.textContent = "BẬT ĐÈN";
 
     setStatus("Đưa mã QR vào khung để quét.", "info");
 
   } catch (error) {
+    torchBtn.classList.add("hidden");
+
     setStatus(
       "Không mở được camera: " + error.message,
       "error"
@@ -368,12 +362,30 @@ async function onScanSuccess(decodedText) {
 
   scanning = false;
 
+  if (torchEnabled) {
+    try {
+      const capabilities =
+        html5QrCode.getRunningTrackCameraCapabilities();
+
+      if (
+        capabilities &&
+        capabilities.torchFeature &&
+        capabilities.torchFeature.isSupported()
+      ) {
+        await capabilities.torchFeature.apply(false);
+      }
+    } catch (error) {
+    }
+
+    torchEnabled = false;
+    torchBtn.textContent = "BẬT ĐÈN";
+  }
+
   try {
     await html5QrCode.stop();
   } catch (error) {
   }
 
-  torchEnabled = false;
   torchBtn.classList.add("hidden");
 
   const parts = decodedText.split("|");
@@ -438,6 +450,10 @@ async function restartScanner() {
 
 async function toggleTorch() {
   if (!html5QrCode || !scanning) {
+    setStatus(
+      "Camera chưa sẵn sàng.",
+      "error"
+    );
     return;
   }
 
@@ -445,10 +461,15 @@ async function toggleTorch() {
     const capabilities =
       html5QrCode.getRunningTrackCameraCapabilities();
 
-    if (!capabilities ||
-        !capabilities.torchFeature ||
-        !capabilities.torchFeature.isSupported()) {
-      setStatus("Thiết bị không hỗ trợ bật đèn.", "error");
+    if (
+      !capabilities ||
+      !capabilities.torchFeature ||
+      !capabilities.torchFeature.isSupported()
+    ) {
+      setStatus(
+        "Thiết bị hoặc trình duyệt hiện tại không hỗ trợ điều khiển đèn flash.",
+        "error"
+      );
       return;
     }
 
@@ -459,9 +480,14 @@ async function toggleTorch() {
     torchBtn.textContent =
       torchEnabled ? "TẮT ĐÈN" : "BẬT ĐÈN";
 
+    setStatus(
+      torchEnabled ? "Đã bật đèn flash." : "Đã tắt đèn flash.",
+      "info"
+    );
+
   } catch (error) {
     setStatus(
-      "Không điều khiển được đèn: " + error.message,
+      "Không điều khiển được đèn flash: " + error.message,
       "error"
     );
   }
@@ -583,6 +609,7 @@ function qrSubmitCallback(result) {
       submitBtn.disabled = true;
       rescanBtn.classList.add("hidden");
       startBtn.classList.remove("hidden");
+
       setStatus(
         "Sẵn sàng quét cuộn tiếp theo.",
         "info"
