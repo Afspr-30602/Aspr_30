@@ -8,19 +8,25 @@
 <script src="https://unpkg.com/html5-qrcode" defer></script>
 
 <style>
-*{box-sizing:border-box}
+*{
+box-sizing:border-box;
+-webkit-tap-highlight-color:transparent
+}
 
-html,body{
+html,
+body{
 margin:0;
 padding:0;
+width:100%;
 min-height:100%;
 font-family:Arial,sans-serif;
 background:#eef2f7;
-color:#172033
+color:#172033;
+overflow-x:hidden
 }
 
 body{
-padding:16px
+padding:12px
 }
 
 .app{
@@ -30,22 +36,26 @@ margin:0 auto
 }
 
 .card{
+width:100%;
 background:#fff;
 border-radius:20px;
-padding:18px;
+padding:16px;
 box-shadow:0 8px 30px rgba(15,23,42,.10);
-margin-bottom:14px
+margin-bottom:14px;
+overflow:hidden
 }
 
 h1{
 font-size:24px;
 text-align:center;
-margin:4px 0 18px
+margin:4px 0 18px;
+font-weight:800
 }
 
 h2{
-font-size:17px;
-margin:0 0 14px
+font-size:19px;
+margin:0 0 16px;
+font-weight:800
 }
 
 .section-title{
@@ -55,61 +65,140 @@ margin:18px 0 10px
 }
 
 .camera-card{
-padding:14px
+padding:8px
 }
 
 .camera-box{
 position:relative;
+display:block;
 width:100%;
+height:360px;
 max-width:520px;
 margin:0 auto;
-border-radius:16px;
+border-radius:18px;
 overflow:hidden;
-background:#0b1220;
-aspect-ratio:4/3;
-isolation:isolate
+background:#05080f;
+isolation:isolate;
+contain:layout paint size;
+flex:none
 }
 
 #reader{
-position:absolute;
-inset:0;
+position:absolute!important;
+left:0!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
 width:100%!important;
 height:100%!important;
-overflow:hidden!important
+max-width:100%!important;
+max-height:100%!important;
+margin:0!important;
+padding:0!important;
+overflow:hidden!important;
+display:block!important;
+transform:none!important
+}
+
+#reader>div{
+position:absolute!important;
+left:0!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
+width:100%!important;
+height:100%!important;
+max-width:100%!important;
+max-height:100%!important;
+margin:0!important;
+padding:0!important;
+overflow:hidden!important;
+display:block!important;
+transform:none!important
+}
+
+#reader__scan_region{
+position:absolute!important;
+left:0!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
+width:100%!important;
+height:100%!important;
+min-width:100%!important;
+min-height:100%!important;
+max-width:100%!important;
+max-height:100%!important;
+margin:0!important;
+padding:0!important;
+overflow:hidden!important;
+display:block!important;
+transform:none!important
+}
+
+#reader__scan_region>video{
+position:absolute!important;
+left:0!important;
+top:0!important;
+width:100%!important;
+height:100%!important;
+min-width:100%!important;
+min-height:100%!important;
+max-width:100%!important;
+max-height:100%!important;
+margin:0!important;
+padding:0!important;
+display:block!important;
+object-fit:cover!important;
+object-position:center center!important;
+transform:none!important;
+border:0!important
 }
 
 #reader video{
 position:absolute!important;
-inset:0!important;
+left:0!important;
+top:0!important;
+right:auto!important;
+bottom:auto!important;
 width:100%!important;
 height:100%!important;
-object-fit:cover!important
+min-width:100%!important;
+min-height:100%!important;
+max-width:100%!important;
+max-height:100%!important;
+margin:0!important;
+padding:0!important;
+display:block!important;
+object-fit:cover!important;
+object-position:center center!important;
+transform:none!important;
+border:0!important
 }
 
-#reader__scan_region{
-width:100%!important;
-height:100%!important;
-min-height:0!important;
-display:flex!important;
-align-items:center!important;
-justify-content:center!important;
-overflow:hidden!important
-}
-
-#reader__scan_region img{
+#reader img{
 max-width:100%!important
 }
 
 #reader__dashboard{
-display:none!important
+display:none!important;
+position:absolute!important;
+visibility:hidden!important;
+width:0!important;
+height:0!important
 }
 
 #reader__status_span{
 display:none!important
 }
 
+#reader__camera_selection{
+display:none!important
+}
+
 .scan-frame{
 position:absolute;
+z-index:20;
 left:16%;
 top:16%;
 width:68%;
@@ -117,20 +206,22 @@ height:68%;
 border:3px solid #22c55e;
 border-radius:18px;
 pointer-events:none;
-z-index:4;
-box-shadow:0 0 0 999px rgba(0,0,0,.18)
+box-shadow:0 0 0 9999px rgba(0,0,0,.18)
 }
 
 .flash-btn{
 display:block;
+position:relative;
+z-index:30;
 width:100%;
+height:64px;
 margin:10px 0 0;
 border:0;
-border-radius:16px;
-padding:15px;
+border-radius:18px;
+padding:0 15px;
 background:#374151;
 color:#fff;
-font-size:17px;
+font-size:18px;
 font-weight:800;
 cursor:pointer
 }
@@ -141,26 +232,31 @@ cursor:not-allowed
 }
 
 .camera-status{
+width:100%;
 text-align:center;
-font-size:13px;
+font-size:15px;
 color:#64748b;
-margin:10px 0 2px;
-min-height:18px
+margin:10px 0;
+min-height:22px;
+line-height:22px
 }
 
 button{
 border:0;
-border-radius:12px;
-padding:13px 15px;
-font-size:14px;
+border-radius:14px;
+padding:14px 15px;
+font-size:15px;
 font-weight:800;
-cursor:pointer
+cursor:pointer;
+-webkit-appearance:none;
+appearance:none
 }
 
 .primary{
 background:#2563eb;
 color:#fff;
-width:100%
+width:100%;
+height:60px
 }
 
 .success{
@@ -187,7 +283,7 @@ gap:12px
 .field{
 display:flex;
 flex-direction:column;
-gap:6px
+gap:7px
 }
 
 .field.full{
@@ -195,23 +291,27 @@ grid-column:1/-1
 }
 
 label{
-font-size:13px;
+font-size:14px;
 font-weight:800;
 color:#475569
 }
 
-input,textarea{
+input,
+textarea{
 width:100%;
 border:1px solid #cbd5e1;
-border-radius:10px;
-padding:11px 12px;
-font-size:15px;
+border-radius:12px;
+padding:13px 13px;
+font-size:16px;
 background:#fff;
 color:#172033;
-outline:none
+outline:none;
+-webkit-appearance:none;
+appearance:none
 }
 
-input:focus,textarea:focus{
+input:focus,
+textarea:focus{
 border-color:#2563eb;
 box-shadow:0 0 0 3px rgba(37,99,235,.10)
 }
@@ -222,7 +322,7 @@ color:#334155
 }
 
 textarea{
-min-height:78px;
+min-height:90px;
 resize:vertical
 }
 
@@ -230,11 +330,12 @@ resize:vertical
 display:flex;
 flex-direction:column;
 gap:10px;
-margin-top:18px
+margin-top:20px
 }
 
 .actions button{
-width:100%
+width:100%;
+height:58px
 }
 
 .hidden{
@@ -243,9 +344,9 @@ display:none!important
 
 .message{
 border-radius:12px;
-padding:11px 12px;
+padding:12px;
 font-size:14px;
-line-height:1.4;
+line-height:1.45;
 margin-top:12px
 }
 
@@ -267,12 +368,21 @@ color:#1e40af
 @media(max-width:520px){
 
 body{
-padding:10px
+padding:8px
 }
 
 .card{
 padding:14px;
-border-radius:16px
+border-radius:18px
+}
+
+.camera-card{
+padding:8px
+}
+
+.camera-box{
+height:330px;
+border-radius:18px
 }
 
 .form-grid{
@@ -283,8 +393,29 @@ grid-template-columns:1fr
 grid-column:auto
 }
 
+.flash-btn{
+height:62px;
+font-size:17px
+}
+
+.primary{
+height:58px
+}
+
+}
+
+@media(max-width:390px){
+
 .camera-box{
-aspect-ratio:4/3
+height:300px
+}
+
+}
+
+@media(min-width:521px){
+
+.camera-box{
+height:400px
 }
 
 }
@@ -309,15 +440,26 @@ aspect-ratio:4/3
 
 </div>
 
-<button id="flashBtn" class="flash-btn hidden" type="button">
+<button
+id="flashBtn"
+class="flash-btn hidden"
+type="button"
+>
 🔦 BẬT FLASH
 </button>
 
-<div id="cameraStatus" class="camera-status">
+<div
+id="cameraStatus"
+class="camera-status"
+>
 Sẵn sàng quét mã cuộn
 </div>
 
-<button id="startBtn" class="primary" type="button">
+<button
+id="startBtn"
+class="primary"
+type="button"
+>
 📷 BẮT ĐẦU QUÉT
 </button>
 
@@ -325,7 +467,10 @@ Sẵn sàng quét mã cuộn
 
 </div>
 
-<div id="formCard" class="card hidden">
+<div
+id="formCard"
+class="card hidden"
+>
 
 <h2>Thông tin cuộn</h2>
 
@@ -339,7 +484,11 @@ Thông tin từ mã QR
 
 <label>Mã cuộn</label>
 
-<input id="maCuon" type="text" readonly>
+<input
+id="maCuon"
+type="text"
+readonly
+>
 
 </div>
 
@@ -347,7 +496,11 @@ Thông tin từ mã QR
 
 <label>Nhà cung cấp</label>
 
-<input id="nhaCungCap" type="text" readonly>
+<input
+id="nhaCungCap"
+type="text"
+readonly
+>
 
 </div>
 
@@ -355,7 +508,11 @@ Thông tin từ mã QR
 
 <label>Định lượng</label>
 
-<input id="dinhLuong" type="text" readonly>
+<input
+id="dinhLuong"
+type="text"
+readonly
+>
 
 </div>
 
@@ -363,7 +520,11 @@ Thông tin từ mã QR
 
 <label>Khổ giấy</label>
 
-<input id="khoGiay" type="text" readonly>
+<input
+id="khoGiay"
+type="text"
+readonly
+>
 
 </div>
 
@@ -436,7 +597,10 @@ placeholder="Nhập ghi chú nếu có"
 
 </div>
 
-<div id="message" class="message hidden"></div>
+<div
+id="message"
+class="message hidden"
+></div>
 
 <div class="actions">
 
@@ -506,10 +670,12 @@ message.className=
 "message "+
 (
 type==="success"
-?"success-msg"
+?
+"success-msg"
 :
 type==="error"
-?"error-msg"
+?
+"error-msg"
 :
 "info-msg"
 );
@@ -561,7 +727,9 @@ khoGiay:parts[3]
 function resetForm(){
 
 Object.values(fields).forEach(
-el=>el.value=""
+el=>{
+el.value="";
+}
 );
 
 currentRequestId=makeRequestId();
@@ -576,14 +744,90 @@ hideMessage();
 
 }
 
+function forceCameraLayout(){
+
+const box=
+document.getElementById("cameraBox");
+
+const reader=
+document.getElementById("reader");
+
+if(!box||!reader)
+return;
+
+reader.style.position="absolute";
+reader.style.left="0";
+reader.style.top="0";
+reader.style.right="0";
+reader.style.bottom="0";
+reader.style.width="100%";
+reader.style.height="100%";
+reader.style.maxWidth="100%";
+reader.style.maxHeight="100%";
+reader.style.overflow="hidden";
+reader.style.margin="0";
+reader.style.padding="0";
+reader.style.transform="none";
+
+const all=
+reader.querySelectorAll("*");
+
+all.forEach(el=>{
+
+if(
+el.id==="reader__dashboard"||
+el.id==="reader__status_span"
+){
+return;
+}
+
+if(
+el.tagName==="VIDEO"||
+el.id==="reader__scan_region"
+){
+
+el.style.position="absolute";
+el.style.left="0";
+el.style.top="0";
+el.style.right="auto";
+el.style.bottom="auto";
+el.style.width="100%";
+el.style.height="100%";
+el.style.minWidth="100%";
+el.style.minHeight="100%";
+el.style.maxWidth="100%";
+el.style.maxHeight="100%";
+el.style.margin="0";
+el.style.padding="0";
+el.style.transform="none";
+el.style.overflow="hidden";
+
+}
+
+});
+
+const video=
+reader.querySelector("video");
+
+if(video){
+
+video.style.objectFit="cover";
+video.style.objectPosition="center center";
+video.setAttribute("playsinline","");
+video.setAttribute("webkit-playsinline","");
+}
+
+}
+
 async function stopScanner(){
 
 if(scanner){
 
 try{
 
-if(scanning)
+if(scanning){
 await scanner.stop();
+}
 
 }catch(e){}
 
@@ -603,11 +847,15 @@ torchOn=false;
 
 flashBtn.classList.add("hidden");
 
-flashBtn.textContent="🔦 BẬT FLASH";
+flashBtn.textContent=
+"🔦 BẬT FLASH";
+
+flashBtn.disabled=false;
 
 startBtn.disabled=false;
 
-startBtn.textContent="📷 BẮT ĐẦU QUÉT";
+startBtn.textContent=
+"📷 BẮT ĐẦU QUÉT";
 
 }
 
@@ -635,7 +883,8 @@ formCard.classList.add("hidden");
 
 startBtn.disabled=true;
 
-startBtn.textContent="ĐANG MỞ CAMERA...";
+startBtn.textContent=
+"ĐANG MỞ CAMERA...";
 
 cameraStatus.textContent=
 "Đang yêu cầu quyền camera...";
@@ -643,6 +892,11 @@ cameraStatus.textContent=
 hideMessage();
 
 try{
+
+const oldReader=
+document.getElementById("reader");
+
+oldReader.innerHTML="";
 
 scanner=
 new Html5Qrcode(
@@ -654,10 +908,13 @@ verbose:false
 
 await scanner.start(
 
-{facingMode:{exact:"environment"}},
+{
+facingMode:{
+ideal:"environment"
+}
+},
 
 {
-
 fps:10,
 
 qrbox:function(
@@ -680,7 +937,9 @@ height:size
 
 },
 
-aspectRatio:4/3
+aspectRatio:4/3,
+
+disableFlip:true
 
 },
 
@@ -694,9 +953,27 @@ scanning=true;
 
 starting=false;
 
+forceCameraLayout();
+
+setTimeout(
+forceCameraLayout,
+100
+);
+
+setTimeout(
+forceCameraLayout,
+500
+);
+
+setTimeout(
+forceCameraLayout,
+1000
+);
+
 startBtn.disabled=false;
 
-startBtn.textContent="📷 ĐANG QUÉT";
+startBtn.textContent=
+"📷 ĐANG QUÉT";
 
 cameraStatus.textContent=
 "Đưa mã QR vào khung xanh";
@@ -722,7 +999,8 @@ starting=false;
 
 startBtn.disabled=false;
 
-startBtn.textContent="📷 BẮT ĐẦU QUÉT";
+startBtn.textContent=
+"📷 BẮT ĐẦU QUÉT";
 
 flashBtn.classList.add("hidden");
 
@@ -926,8 +1204,10 @@ setMessage(
 );
 
 setTimeout(
-()=>fields.viTri.focus(),
-100
+()=>{
+fields.viTri.focus();
+},
+150
 );
 
 }
