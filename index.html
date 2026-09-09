@@ -826,7 +826,9 @@ if(scanner){
 try{
 
 if(scanning){
+
 await scanner.stop();
+
 }
 
 }catch(e){}
@@ -867,7 +869,7 @@ return;
 if(typeof Html5Qrcode==="undefined"){
 
 setMessage(
-"Không tải được bộ quét QR. Hãy tải lại trang.",
+"Trình quét QR chưa tải xong. Hãy tải lại trang rồi thử lại.",
 "error"
 );
 
@@ -887,16 +889,67 @@ startBtn.textContent=
 "ĐANG MỞ CAMERA...";
 
 cameraStatus.textContent=
-"Đang yêu cầu quyền camera...";
+"Đang kiểm tra camera trên thiết bị...";
 
 hideMessage();
 
 try{
 
-const oldReader=
-document.getElementById("reader");
+if(scanner){
 
-oldReader.innerHTML="";
+try{
+await scanner.stop();
+}catch(e){}
+
+try{
+await scanner.clear();
+}catch(e){}
+
+scanner=null;
+
+}
+
+document.getElementById("reader").innerHTML="";
+
+const cameras=
+await Html5Qrcode.getCameras();
+
+if(!cameras||cameras.length===0){
+
+throw new Error(
+"Không tìm thấy camera trên thiết bị."
+);
+
+}
+
+let cameraId=
+cameras[0].id;
+
+const backCamera=
+cameras.find(
+camera=>{
+
+const label=
+String(
+camera.label||""
+).toLowerCase();
+
+return(
+label.includes("back")||
+label.includes("rear")||
+label.includes("environment")||
+label.includes("sau")
+);
+
+}
+);
+
+if(backCamera){
+
+cameraId=
+backCamera.id;
+
+}
 
 scanner=
 new Html5Qrcode(
@@ -908,13 +961,10 @@ verbose:false
 
 await scanner.start(
 
-{
-facingMode:{
-ideal:"environment"
-}
-},
+cameraId,
 
 {
+
 fps:10,
 
 qrbox:function(
@@ -986,8 +1036,17 @@ await detectTorch();
 
 try{
 
-if(scanner)
+if(scanner){
+
+try{
+await scanner.stop();
+}catch(e){}
+
+try{
 await scanner.clear();
+}catch(e){}
+
+}
 
 }catch(e){}
 
@@ -997,20 +1056,58 @@ scanning=false;
 
 starting=false;
 
+torchOn=false;
+
+flashBtn.classList.add("hidden");
+
 startBtn.disabled=false;
 
 startBtn.textContent=
 "📷 BẮT ĐẦU QUÉT";
 
-flashBtn.classList.add("hidden");
-
 cameraStatus.textContent=
 "Không thể mở camera";
 
+const errorText=
+String(
+error&&error.message
+?
+error.message
+:
+error
+);
+
+const lower=
+errorText.toLowerCase();
+
+if(
+lower.includes("permission")||
+lower.includes("notallowed")
+){
+
 setMessage(
-"Không mở được camera. Hãy cấp quyền camera cho trình duyệt rồi thử lại.",
+"iPhone chưa cho phép trang web sử dụng camera. Hãy cấp quyền Camera cho trình duyệt rồi thử lại.",
 "error"
 );
+
+}else if(
+lower.includes("notfound")||
+lower.includes("no camera")
+){
+
+setMessage(
+"Không tìm thấy camera trên thiết bị.",
+"error"
+);
+
+}else{
+
+setMessage(
+"Không mở được camera. Hãy kiểm tra quyền Camera của trình duyệt rồi thử lại.",
+"error"
+);
+
+}
 
 }
 
@@ -1021,7 +1118,9 @@ async function detectTorch(){
 try{
 
 const video=
-document.querySelector("#reader video");
+document.querySelector(
+"#reader video"
+);
 
 if(!video||!video.srcObject){
 
@@ -1090,7 +1189,9 @@ return;
 try{
 
 const video=
-document.querySelector("#reader video");
+document.querySelector(
+"#reader video"
+);
 
 if(!video||!video.srcObject)
 return;
@@ -1234,7 +1335,8 @@ document.createElement("script");
 let finished=false;
 
 const timer=
-setTimeout(()=>{
+setTimeout(
+()=>{
 
 if(finished)
 return;
@@ -1249,7 +1351,9 @@ new Error(
 )
 );
 
-},20000);
+},
+20000
+);
 
 function cleanup(){
 
@@ -1262,7 +1366,8 @@ script.parentNode.removeChild(script);
 
 }
 
-window[callbackName]=data=>{
+window[callbackName]=
+data=>{
 
 if(finished)
 return;
@@ -1275,7 +1380,8 @@ resolve(data);
 
 };
 
-script.onerror=()=>{
+script.onerror=
+()=>{
 
 if(finished)
 return;
@@ -1295,11 +1401,15 @@ new Error(
 script.src=
 url+
 "&callback="+
-encodeURIComponent(callbackName)+
+encodeURIComponent(
+callbackName
+)+
 "&_="+
 Date.now();
 
-document.body.appendChild(script);
+document.body.appendChild(
+script
+);
 
 }
 );
