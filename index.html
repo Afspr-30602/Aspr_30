@@ -227,10 +227,14 @@ resize:vertical
 }
 
 .actions{
-display:grid;
-grid-template-columns:1fr 1fr;
+display:flex;
+flex-direction:column;
 gap:10px;
 margin-top:18px
+}
+
+.actions button{
+width:100%
 }
 
 .hidden{
@@ -260,16 +264,6 @@ background:#dbeafe;
 color:#1e40af
 }
 
-.badge{
-display:inline-block;
-background:#e2e8f0;
-border-radius:999px;
-padding:5px 9px;
-font-size:12px;
-font-weight:800;
-color:#475569
-}
-
 @media(max-width:520px){
 
 body{
@@ -287,10 +281,6 @@ grid-template-columns:1fr
 
 .field.full{
 grid-column:auto
-}
-
-.actions{
-grid-template-columns:1fr 1fr
 }
 
 .camera-box{
@@ -395,6 +385,7 @@ Vị trí cuộn (sau chạy) *
 id="viTri"
 type="text"
 autocomplete="off"
+placeholder="Nhập vị trí cuộn"
 >
 
 </div>
@@ -410,6 +401,7 @@ id="khoiLuong"
 type="text"
 inputmode="decimal"
 autocomplete="off"
+placeholder="Nhập khối lượng"
 >
 
 </div>
@@ -424,6 +416,7 @@ Người gắp giấy *
 id="nguoiGap"
 type="text"
 autocomplete="name"
+placeholder="Nhập người gắp giấy"
 >
 
 </div>
@@ -434,7 +427,10 @@ autocomplete="name"
 Ghi chú
 </label>
 
-<textarea id="ghiChu"></textarea>
+<textarea
+id="ghiChu"
+placeholder="Nhập ghi chú nếu có"
+></textarea>
 
 </div>
 
@@ -445,19 +441,19 @@ Ghi chú
 <div class="actions">
 
 <button
-id="newRollBtn"
-class="secondary"
-type="button"
->
-📷 QUÉT CUỘN MỚI
-</button>
-
-<button
 id="submitBtn"
 class="success"
 type="button"
 >
 ✓ XÁC NHẬN XUẤT
+</button>
+
+<button
+id="newRollBtn"
+class="secondary"
+type="button"
+>
+📷 QUÉT CUỘN TIẾP THEO
 </button>
 
 </div>
@@ -554,11 +550,8 @@ throw new Error(
 return{
 
 maCuon:parts[0],
-
 nhaCungCap:parts[1],
-
 dinhLuong:parts[2],
-
 khoGiay:parts[3]
 
 };
