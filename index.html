@@ -2,20 +2,12 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f766e">
 
-  <meta
-    name="theme-color"
-    content="#0f766e">
+  <title>XUẤT CUỘN GIẤY</title>
 
-  <title>Xuất Cuộn Giấy</title>
-
-  <script
-    src="https://unpkg.com/html5-qrcode"
-    type="text/javascript">
-  </script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <style>
     * {
@@ -43,7 +35,7 @@
 
     .header h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 27px;
       font-weight: 800;
     }
 
@@ -233,10 +225,7 @@
       <p>Quản lý thông tin xuất cuộn</p>
     </header>
 
-    <div
-      id="message"
-      class="message">
-    </div>
+    <div id="message" class="message"></div>
 
     <section class="card">
 
@@ -274,63 +263,46 @@
       </div>
 
       <div class="field">
-
-        <label>
-          Thời gian xuất
-        </label>
+        <label>Thời gian xuất</label>
 
         <input
           id="thoiGian"
           class="readonly"
           type="text"
           readonly>
-
       </div>
 
       <div class="field">
-
-        <label>
-          Mã cuộn
-        </label>
+        <label>Mã cuộn</label>
 
         <div
           id="maCuon"
           class="fixed-value empty">
           Chưa quét QR
         </div>
-
       </div>
 
       <div class="field">
-
-        <label>
-          Nhà cung cấp
-        </label>
+        <label>Nhà cung cấp</label>
 
         <div
           id="nhaCungCap"
           class="fixed-value empty">
           Chưa quét QR
         </div>
-
       </div>
 
       <div class="field">
-
-        <label>
-          Định lượng
-        </label>
+        <label>Định lượng</label>
 
         <div
           id="dinhLuong"
           class="fixed-value empty">
           Chưa quét QR
         </div>
-
       </div>
 
       <div class="field">
-
         <label>
           Vị trí cuộn (sau chạy)
           <span class="required">*</span>
@@ -341,11 +313,9 @@
           type="text"
           autocomplete="off"
           placeholder="Nhập vị trí cuộn">
-
       </div>
 
       <div class="field">
-
         <label>
           Khối lượng cuộn (sau chạy)
           <span class="required">*</span>
@@ -358,21 +328,15 @@
           step="0.01"
           autocomplete="off"
           placeholder="Nhập khối lượng">
-
       </div>
 
       <div class="field">
-
-        <label>
-          Ghi chú
-        </label>
+        <label>Ghi chú</label>
 
         <textarea
           id="ghiChu"
           autocomplete="off"
-          placeholder="Nhập ghi chú nếu có">
-        </textarea>
-
+          placeholder="Nhập ghi chú nếu có"></textarea>
       </div>
 
       <div
@@ -437,7 +401,6 @@
     };
 
     function updateTime() {
-
       const now = new Date();
 
       el.thoiGian.value =
@@ -451,53 +414,33 @@
           second: "2-digit",
           hour12: false
         });
-
     }
 
     function showMessage(message, type) {
-
       el.message.textContent = message;
-
-      el.message.className =
-        "message " + type;
-
+      el.message.className = "message " + type;
     }
 
     function clearMessage() {
-
       el.message.textContent = "";
-
       el.message.className = "message";
-
     }
 
     function setStatus(message) {
-
       el.status.textContent = message;
-
     }
 
     function setField(element, value) {
-
       if (value) {
-
         element.textContent = value;
-
         element.classList.remove("empty");
-
       } else {
-
-        element.textContent =
-          "Chưa quét QR";
-
+        element.textContent = "Chưa quét QR";
         element.classList.add("empty");
-
       }
-
     }
 
     function createRequestId() {
-
       return (
         Date.now().toString(36) +
         "-" +
@@ -505,109 +448,102 @@
           .toString(36)
           .substring(2, 14)
       );
-
     }
 
-    function jsonpRequest(params) {
+    function sendJsonp(params) {
+      return new Promise((resolve, reject) => {
 
-      return new Promise(
-        (resolve, reject) => {
+        const callbackName =
+          "qrCallback_" +
+          Date.now() +
+          "_" +
+          Math.random()
+            .toString(36)
+            .substring(2, 10);
 
-          const callbackName =
-            "qr_" +
-            Date.now() +
-            "_" +
-            Math.random()
-              .toString(36)
-              .substring(2, 10);
+        const script =
+          document.createElement("script");
 
-          const script =
-            document.createElement("script");
+        let finished = false;
 
-          let finished = false;
+        const timeout =
+          setTimeout(() => {
 
-          const timeout =
-            setTimeout(() => {
+            if (finished) return;
 
-              if (finished) return;
+            finished = true;
+            cleanup();
 
-              finished = true;
+            reject(
+              new Error(
+                "Máy chủ không phản hồi."
+              )
+            );
 
-              cleanup();
+          }, 20000);
 
-              reject(
-                new Error(
-                  "Máy chủ không phản hồi."
-                )
-              );
+        function cleanup() {
 
-            }, 15000);
+          clearTimeout(timeout);
 
-          function cleanup() {
-
-            clearTimeout(timeout);
-
-            try {
-              delete window[callbackName];
-            } catch (error) {
-              window[callbackName] =
-                undefined;
-            }
-
-            if (script.parentNode) {
-              script.parentNode
-                .removeChild(script);
-            }
-
+          try {
+            delete window[callbackName];
+          } catch (error) {
+            window[callbackName] =
+              undefined;
           }
 
-          window[callbackName] =
-            function(result) {
-
-              if (finished) return;
-
-              finished = true;
-
-              cleanup();
-
-              resolve(result);
-
-            };
-
-          const query =
-            new URLSearchParams({
-              ...params,
-              callback: callbackName
-            });
-
-          script.src =
-            API_URL +
-            "?" +
-            query.toString();
-
-          script.onerror =
-            function() {
-
-              if (finished) return;
-
-              finished = true;
-
-              cleanup();
-
-              reject(
-                new Error(
-                  "Không thể kết nối máy chủ."
-                )
-              );
-
-            };
-
-          document.body
-            .appendChild(script);
-
+          if (script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
         }
-      );
 
+        window[callbackName] =
+          function(result) {
+
+            if (finished) return;
+
+            finished = true;
+            cleanup();
+
+            resolve(result);
+          };
+
+        const query =
+          new URLSearchParams({
+            action: "submit",
+            requestId: params.requestId,
+            maCuon: params.maCuon,
+            nhaCungCap: params.nhaCungCap,
+            dinhLuong: params.dinhLuong,
+            viTri: params.viTri,
+            khoiLuong: params.khoiLuong,
+            ghiChu: params.ghiChu,
+            callback: callbackName
+          });
+
+        script.src =
+          API_URL +
+          "?" +
+          query.toString();
+
+        script.onerror =
+          function() {
+
+            if (finished) return;
+
+            finished = true;
+            cleanup();
+
+            reject(
+              new Error(
+                "Không thể kết nối máy chủ."
+              )
+            );
+          };
+
+        document.body.appendChild(script);
+      });
     }
 
     async function startScanner() {
@@ -624,7 +560,6 @@
       try {
 
         if (state.scanner) {
-
           try {
             await state.scanner.clear();
           } catch (error) {
@@ -674,11 +609,9 @@
         el.scanButton.textContent =
           "📷 BẮT ĐẦU QUÉT";
 
-        el.scanButton.disabled =
-          false;
+        el.scanButton.disabled = false;
 
-        el.flashButton.disabled =
-          true;
+        el.flashButton.disabled = true;
 
         setStatus(
           "Không thể mở camera"
@@ -688,9 +621,7 @@
           "Không thể mở camera. Hãy kiểm tra quyền camera của trình duyệt.",
           "message-error"
         );
-
       }
-
     }
 
     async function detectTorch() {
@@ -721,9 +652,7 @@
 
         el.flashButton.textContent =
           "🔦 ĐÈN KHÔNG HỖ TRỢ";
-
       }
-
     }
 
     async function toggleFlash() {
@@ -762,9 +691,7 @@
           "Thiết bị không cho phép điều khiển đèn camera.",
           "message-error"
         );
-
       }
-
     }
 
     function onScanFailure() {
@@ -795,9 +722,7 @@
       const parts =
         decodedText
           .split("|")
-          .map(value =>
-            value.trim()
-          );
+          .map(value => value.trim());
 
       if (parts.length !== 3) {
 
@@ -868,7 +793,6 @@
       );
 
       el.viTri.focus();
-
     }
 
     function validate() {
@@ -887,9 +811,7 @@
         return false;
       }
 
-      if (
-        !el.viTri.value.trim()
-      ) {
+      if (!el.viTri.value.trim()) {
 
         showMessage(
           "Vui lòng nhập vị trí cuộn.",
@@ -901,9 +823,7 @@
         return false;
       }
 
-      if (
-        !el.khoiLuong.value.trim()
-      ) {
+      if (!el.khoiLuong.value.trim()) {
 
         showMessage(
           "Vui lòng nhập khối lượng cuộn.",
@@ -916,7 +836,6 @@
       }
 
       return true;
-
     }
 
     async function submitData() {
@@ -934,7 +853,6 @@
         createRequestId();
 
       el.submitButton.disabled = true;
-
       el.rescanButton.disabled = true;
 
       el.submitButton.textContent =
@@ -949,9 +867,7 @@
       try {
 
         const result =
-          await jsonpRequest({
-
-            action: "submit",
+          await sendJsonp({
 
             requestId:
               requestId,
@@ -973,26 +889,23 @@
 
             ghiChu:
               el.ghiChu.value.trim()
-
           });
 
         if (
           !result ||
           result.success !== true
         ) {
-
           throw new Error(
             result &&
             result.message
               ? result.message
-              : "Máy chủ từ chối dữ liệu."
+              : "Máy chủ không xác nhận dữ liệu."
           );
-
         }
 
         showMessage(
           result.duplicate
-            ? "Giao dịch này đã được ghi trước đó."
+            ? "⚠️ Giao dịch này đã được ghi trước đó."
             : "✅ XUẤT CUỘN THÀNH CÔNG",
           "message-success"
         );
@@ -1019,57 +932,17 @@
 
       } finally {
 
-        state.submitting =
-          false;
+        state.submitting = false;
 
-        el.submitButton.disabled =
-          false;
-
-        el.rescanButton.disabled =
-          false;
+        el.submitButton.disabled = false;
+        el.rescanButton.disabled = false;
 
         el.submitButton.textContent =
           "✅ XÁC NHẬN XUẤT";
-
       }
-
     }
 
-    async function rescan() {
-
-      if (state.submitting) {
-        return;
-      }
-
-      if (
-        state.scanning &&
-        state.scanner
-      ) {
-
-        try {
-          await state.scanner.stop();
-        } catch (error) {
-        }
-
-        state.scanning = false;
-
-      }
-
-      if (state.scanner) {
-
-        try {
-          await state.scanner.clear();
-        } catch (error) {
-        }
-
-        state.scanner = null;
-
-      }
-
-      state.torchOn = false;
-
-      state.torchSupported =
-        false;
+    function resetForm() {
 
       state.maCuon = "";
       state.nhaCungCap = "";
@@ -1094,33 +967,63 @@
       el.khoiLuong.value = "";
       el.ghiChu.value = "";
 
-      el.flashButton.disabled =
-        true;
+      updateTime();
 
-      el.flashButton.textContent =
-        "🔦 BẬT ĐÈN";
-
-      el.scanButton.disabled =
-        false;
+      el.scanButton.disabled = false;
 
       el.scanButton.textContent =
         "📷 BẮT ĐẦU QUÉT";
 
-      clearMessage();
+      el.flashButton.disabled = true;
 
-      updateTime();
+      el.flashButton.textContent =
+        "🔦 BẬT ĐÈN";
+
+      state.torchOn = false;
+
+      if (state.scanner) {
+        try {
+          state.scanner.clear();
+        } catch (error) {
+        }
+
+        state.scanner = null;
+      }
+
+      state.scanning = false;
+
+      el.reader.innerHTML = "";
+    }
+
+    async function rescan() {
+
+      if (state.submitting) {
+        return;
+      }
+
+      if (
+        state.scanning &&
+        state.scanner
+      ) {
+
+        try {
+          await state.scanner.stop();
+        } catch (error) {
+        }
+      }
+
+      resetForm();
+
+      clearMessage();
 
       setStatus(
         "Sẵn sàng quét lại."
       );
 
-      el.reader.innerHTML = "";
-
       window.scrollTo({
         top: 0,
         behavior: "smooth"
       });
-
     }
 
     updateTime();
@@ -1130,29 +1033,25 @@
       1000
     );
 
-    el.scanButton
-      .addEventListener(
-        "click",
-        startScanner
-      );
+    el.scanButton.addEventListener(
+      "click",
+      startScanner
+    );
 
-    el.flashButton
-      .addEventListener(
-        "click",
-        toggleFlash
-      );
+    el.flashButton.addEventListener(
+      "click",
+      toggleFlash
+    );
 
-    el.submitButton
-      .addEventListener(
-        "click",
-        submitData
-      );
+    el.submitButton.addEventListener(
+      "click",
+      submitData
+    );
 
-    el.rescanButton
-      .addEventListener(
-        "click",
-        rescan
-      );
+    el.rescanButton.addEventListener(
+      "click",
+      rescan
+    );
 
   </script>
 
